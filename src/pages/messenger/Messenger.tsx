@@ -1,11 +1,12 @@
+import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
+import { useInterval } from 'hooks';
 import { MessageContainer, Header, ChatInput } from '../';
 import { MessageListProps, replyProps } from '../../utils/InterfaceSet';
 import LoadingIndicator from 'components/LoadingIndicator';
-import axios from 'axios';
 
 interface MessengerProps {
   isLogged: boolean;
@@ -28,22 +29,18 @@ export default function Messenger({
   const [isLoading, setIsLoading] = useState<Boolean>(true);
   const latestConversationRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const userInfo = useSelector((state: RootState) => state.authReducer);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  function scrollToBottom() {
     if (latestConversationRef.current === null) return;
     latestConversationRef.current.scrollIntoView({
       behavior: 'smooth',
       block: 'end',
     });
-  };
-
-  useEffect(() => {
-    setTimeout(() => {
-      scrollToBottom();
-    }, 300);
-  }, [isLogged]);
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  }
 
   const getData = () => {
     axios
@@ -53,12 +50,17 @@ export default function Messenger({
       });
   };
 
-  const userInfo = useSelector((state: RootState) => state.authReducer);
+  useEffect(() => {
+    setTimeout(() => {
+      scrollToBottom();
+    }, 300);
+  }, [isLogged]);
 
-  useEffect(() => {});
+  // useInterval(() => scrollToBottom(), 300);
 
   useEffect(() => {
     if (!userInfo.isLogged) navigate('/login');
+
     scrollToBottom();
     getData();
     setIsLoading(false);

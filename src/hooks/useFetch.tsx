@@ -9,9 +9,17 @@ export default function useFetch(args: requestParamsProps) {
   useEffect(() => {
     const getData = async () => {
       const res = await HttpUtil.requestApi(requestParams);
-      const { msg, data } = res;
+      const { msg, data, statusText } = res;
 
       if (!!msg) return;
+
+      if (statusText !== 'OK') {
+        setRequestParams({
+          url: '/messages',
+          method: 'GET',
+          params: {},
+        });
+      }
 
       setResponse(data);
     };

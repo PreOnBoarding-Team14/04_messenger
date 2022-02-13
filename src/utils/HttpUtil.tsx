@@ -42,7 +42,7 @@ class HttpUtil {
         response.status +
         ']';
 
-    return { data: response, msg };
+    return { data: response, statusText: response.statusText, msg };
   }
 }
 

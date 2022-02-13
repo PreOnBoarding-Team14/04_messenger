@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from 'store/reducers/';
+import { HttpUtil } from 'utils';
 import { userInfoProps } from '../../utils/InterfaceSet';
 import LOGO from '../../assets/images/logo.svg';
 import LoginStyle from 'assets/styles/LoginStyle';
@@ -21,8 +22,8 @@ export default function Login() {
   const [loginInfo, setLoginInfo] = useState({ id: '', password: '' });
   const [errorMsg, setErrorMsg] = useState('');
   const [userInfo, setUserInfo] = useState<userInfoProps>();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!userInfo) return;
@@ -32,7 +33,7 @@ export default function Login() {
     dispatch({ type: 'common', name: 'userName', data: userInfo.name });
     dispatch({ type: 'common', name: 'profileImage', data: userInfo.img });
     navigate('/');
-  }, [dispatch, navigate, userInfo]);
+  }, [userInfo]);
 
   const handleInputValue =
     (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,19 +41,22 @@ export default function Login() {
       setErrorMsg('');
     };
 
-  const handleLogin = () => {
-    const END_POINT = 'https://json-server-wanted14.herokuapp.com/login';
-    axios
-      .post(END_POINT, { id: loginInfo.id, password: loginInfo.password })
-      .then((res) => {
-        if (res.data) {
-          const { data } = res;
-          setUserInfo(data);
-        } else {
-          setErrorMsg('아이디와 비밀번호를 확인해주세요');
-          setUserInfo(undefined);
-        }
-      });
+  const handleLogin = async () => {
+    const res = await HttpUtil.requestApi({
+      url: '/login',
+      method: 'POST',
+      params: {
+        id: loginInfo.id,
+        password: loginInfo.password,
+      },
+    });
+
+    if (!res.data) {
+      setErrorMsg('아이디와 비밀번호를 확인해주세요');
+      setUserInfo(undefined);
+    } else {
+      setUserInfo(res.data.data);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

@@ -9,7 +9,7 @@ export default function App() {
   const auth = useSelector((state: RootState) => state.authReducer);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Routes>
         <Route
           path="/"
